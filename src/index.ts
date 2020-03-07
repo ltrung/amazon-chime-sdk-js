@@ -126,11 +126,13 @@ import MediaRecordingEvent from './mediarecording/MediaRecordingEvent';
 import MediaRecordingFactory from './mediarecording/MediaRecordingFactory';
 import MediaRecordingOptions from './mediarecording/MediaRecordingOptions';
 import MediaStreamBroker from './mediastreambroker/MediaStreamBroker';
+import MeetingLog from './logger/MeetingLog';
 import MeetingSession from './meetingsession/MeetingSession';
 import MeetingSessionConfiguration from './meetingsession/MeetingSessionConfiguration';
 import MeetingSessionCredentials from './meetingsession/MeetingSessionCredentials';
 import MeetingSessionLifecycleEvent from './meetingsession/MeetingSessionLifecycleEvent';
 import MeetingSessionLifecycleEventCondition from './meetingsession/MeetingSessionLifecycleEventCondition';
+import MeetingSessionPOSTLogger from './logger/MeetingSessionPOSTLogger';
 import MeetingSessionStatus from './meetingsession/MeetingSessionStatus';
 import MeetingSessionStatusCode from './meetingsession/MeetingSessionStatusCode';
 import MeetingSessionTURNCredentials from './meetingsession/MeetingSessionTURNCredentials';
@@ -408,11 +410,13 @@ export {
   MediaRecordingFactory,
   MediaRecordingOptions,
   MediaStreamBroker,
+  MeetingLog,
   MeetingSession,
   MeetingSessionConfiguration,
   MeetingSessionCredentials,
   MeetingSessionLifecycleEvent,
   MeetingSessionLifecycleEventCondition,
+  MeetingSessionPOSTLogger,
   MeetingSessionStatus,
   MeetingSessionStatusCode,
   MeetingSessionTURNCredentials,

@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add new ContentShareController APIs
 - Getting Started guide
 - Doc guide generator
-- Add basic component library setup
+- Add POSTLogger for meeting sessions
 
 ### Changed
 - Do not bypass ice gathering based on sdp connection attributes for Safari on iOS
@@ -74,8 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixing infinite loop when retrying in audio and video integ tests
 - Make sure both participants in audio and video tests reach finish state before retrying
 - Trigger videoSendBandwidthDidChange and videoReceiveBandwidthDidChange for Safari
-- Do not disconnect video element with different srcObj when destroying video tile
-- Stop content share if the media stream end
+- Do not disconnect video element with different srcObj when destroying video tile 
 
 ### Removed
 - Remove SDP class withPlanBSimulcast method
