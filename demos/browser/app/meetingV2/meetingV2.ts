@@ -29,7 +29,7 @@ import {
 } from '../../../../src/index';
 
 class DemoTileOrganizer {
-  private static MAX_TILES = 16;
+  private static MAX_TILES = 17;
   private tiles: { [id: number]: number } = {};
   public tileStates: {[id: number]: boolean } = {};
 
@@ -128,9 +128,13 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
     'button-speaker': true,
     'button-content-share': false,
     'button-pause-content-share': false,
+    'button-popout-contentshare': false
   };
 
   contentShareType: ContentShareType = ContentShareType.ScreenCapture;
+  contentShareTileId: number = null;
+
+  popoutWindow: any = null;
 
   // feature flags
   enableWebAudio = false;
@@ -372,6 +376,36 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
       });
     });
 
+    const buttonPopoutContentShare = document.getElementById('button-popout-contentshare');
+    buttonPopoutContentShare.addEventListener('click', _e => {
+      if (this.toggleButton('button-popout-contentshare')) {
+        this.disconnectVideoElement('video-screenshare');
+        const videoElement = document.getElementById('video-screenshare2') as HTMLVideoElement;
+        //this.audioVideo.unbindVideoElement(this.contentShareTileId);
+        this.audioVideo.bindVideoElement(this.contentShareTileId, videoElement);
+        this.popoutWindow = window.open("", "_blank", "width=320,height=240");
+        this.popoutWindow.document.body.innerHTML =
+          "<div><video id=\"video-screenshare\" width=\"320\"" +" height=\"240\" muted=\"muted\"/></div>";
+        const popUpVideoElement = this.popoutWindow.document.getElementById('video-screenshare') as HTMLVideoElement;
+        popUpVideoElement.srcObject = videoElement.srcObject;
+        new TimeoutScheduler(100).start(() => {
+          popUpVideoElement.play()
+            .then(function () {
+              console.log('Successfully started screen share playback');
+            })
+            .catch(function (reason) {
+              console.error(reason);
+            });
+        });
+      } else {
+        this.popoutWindow.close();
+        this.disconnectVideoElement('video-screenshare2');
+        const videoElement = document.getElementById('video-screenshare') as HTMLVideoElement;
+        //this.audioVideo.unbindVideoElement(this.contentShareTileId);
+        this.audioVideo.bindVideoElement(this.contentShareTileId, videoElement);
+      }
+    });
+
     const buttonSpeaker = document.getElementById('button-speaker');
     buttonSpeaker.addEventListener('click', _e => {
       new AsyncScheduler().start(async () => {
@@ -412,6 +446,26 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
         window.location = window.location.pathname;
       });
     });
+  }
+
+  disconnectVideoElement(videoElemId: string): void {
+    const videoElement = document.getElementById(videoElemId) as HTMLVideoElement;
+    videoElement.pause();
+    videoElement.style.transform = '';
+    this.setVideoElementFlag(videoElement, 'disablePictureInPicture', false);
+    this.setVideoElementFlag(videoElement, 'disableRemotePlayback', false);
+    videoElement.srcObject = null;
+  }
+
+  setVideoElementFlag(
+    videoElement: HTMLVideoElement,
+    flag: string,
+    value: boolean
+  ): void {
+    if (flag in videoElement) {
+      // @ts-ignore
+      videoElement[flag] = value;
+    }
   }
 
   toggleButton(button: string, state?: 'on' | 'off'): boolean {
@@ -634,8 +688,9 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
             if (baseAttendeeId !== attendeeId) {
               name += " «Content»";
               const selfAttendeeId = this.meetingSession.configuration.credentials.attendeeId;
-              //If someone else share content, stop the current content share
+              // If someone else share content, stop the current content share
               if (selfAttendeeId !== baseAttendeeId && this.isButtonOn('button-content-share')) {
+                console.log(`Stop content sharing for self ${selfAttendeeId}`);
                 this.contentShareStop();
               }
             }
@@ -1091,10 +1146,18 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
     if (!tileState.boundAttendeeId) {
       return;
     }
-    const selfAttendeeId = this.meetingSession.configuration.credentials.attendeeId;
+
     const modality = new DefaultModality(tileState.boundAttendeeId);
-    if (modality.base() === selfAttendeeId && modality.hasModality(DefaultModality.MODALITY_CONTENT)) {
-      // don't bind one's own content
+    if (modality.hasModality(DefaultModality.MODALITY_CONTENT)) {
+      let videoElement = undefined;
+      if (this.isButtonOn("button-popout-contentshare")){
+        videoElement = document.getElementById(`video-screenshare2`) as HTMLVideoElement;
+      } else {
+        videoElement = document.getElementById(`video-screenshare`) as HTMLVideoElement;
+      }
+      this.contentShareTileId = tileState.tileId;
+      this.log(`binding video tile ${tileState.tileId} from attendee ${modality.base()} to ${videoElement.id}`);
+      this.audioVideo.bindVideoElement(tileState.tileId, videoElement);
       return;
     }
     const tileIndex = tileState.localTile
@@ -1138,7 +1201,15 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
 
   videoTileWasRemoved(tileId: number): void {
     this.log(`video tile removed: ${tileId}`);
-    this.hideTile(this.tileOrganizer.releaseTileIndex(tileId));
+    if (this.contentShareTileId === tileId) {
+      this.contentShareTileId = null;
+    }
+    if (this.contentShareTileId !== tileId) {
+      console.log(`video tile is removed`);
+      this.hideTile(this.tileOrganizer.releaseTileIndex(tileId));
+    } else {
+      console.log(`screenshare tile is removed`);
+    }
   }
 
   videoAvailabilityDidChange(availability: MeetingSessionVideoAvailability): void {

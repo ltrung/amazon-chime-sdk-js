@@ -260,6 +260,9 @@
         </div>
       </div>
       <div class="col-2 text-right">
+        <button id="button-popout-contentshare" type="button" class="btn btn-outline-success m-2 px-4" title="Pop out">
+          ${require('../../node_modules/open-iconic/svg/eject.svg').default}
+        </button>
         <button id="button-meeting-leave" type="button" class="btn btn-outline-success m-2 px-4" title="Leave meeting">
           ${require('../../node_modules/open-iconic/svg/account-logout.svg').default}
         </button>
@@ -272,6 +275,12 @@
       <div class="col-sm-4">
         <div class="bs-component">
           <ul id="roster" class="list-group"></ul>
+        </div>
+        <div id="tile-screenshare">
+          <video id="video-screenshare" width="320" height="240" />
+        </div>
+        <div id="tile-screenshare2">
+          <video id="video-screenshare2" width="320" height="240" />
         </div>
       </div>
       <div class="col p-0">
